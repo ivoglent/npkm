@@ -29,7 +29,19 @@ export class Install  extends BaseCommand  implements CommandInterface{
                 let self = this;
                 async.parallel([
                     function (next) {
-                        self.git().then(next, next);
+                        let _pks = [];
+                        if (self.packages.gits) {
+                           for(let name in self.packages.gits) {
+                               _pks.push({
+                                   name : name,
+                                   vertion : 'latest'
+                               });
+                           }
+                        }
+                        async.eachLimit(_pks, 1, function (pk, next) {
+                            self.git(pk.name, pk.version).then(next, next);
+                        });
+
                     },
                     function (next) {
                         self.npm().then(next).catch(next);
