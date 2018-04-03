@@ -1,0 +1,40 @@
+{
+  "name": "npkm",
+  "version": "1.0.0",
+  "description": "Node package management - Another way to use git as private package",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register ./tests/*.ts"
+  },
+  "bin": {
+    "npkm": "./dist/npkm.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivoglent/npkm.git"
+  },
+  "keywords": [
+    "npm",
+    "packages",
+    "node",
+    "packages"
+  ],
+  "author": "Ivoglent Nguyen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ivoglent/npkm/issues"
+  },
+  "homepage": "https://github.com/ivoglent/npkm#readme",
+  "devDependencies": {
+    "@types/node": "^9.6.1",
+    "@types/chai": "^4.0.8",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.0.6"
+  },
+  "dependencies": {
+    "async": "^2.6.0"
+  }
+}
