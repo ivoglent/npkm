@@ -1,8 +1,8 @@
 {
   "name": "npkm",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Node package management - Another way to use git as private package",
-  "main": "dist/index.js",
+  "main": "dist/npkm.js",
   "scripts": {
     "test": "mocha -r ts-node/register ./tests/*.ts"
   },

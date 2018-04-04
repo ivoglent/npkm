@@ -12,6 +12,8 @@ npm i -g npkm
 Just like npm program. But if you want to use your git repository as a private package, modify project package.json 
 and add some git config like:
 
+> Note : You should add ssh key for authentication. Example : [https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/)
+
 ```json
 {
   "name": "npkm",
@@ -25,7 +27,7 @@ and add some git config like:
     "async": "^2.6.0"
   },
   "gits": {
-    "data-layer": "git@git.solazu.net:trading-platform/data-layer.git",
+    "data-layer": "git@githost.com:projects/data-layer.git"
   },
   "author": "",
   "license": "ISC"
