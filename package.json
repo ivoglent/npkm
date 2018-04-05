@@ -1,6 +1,6 @@
 {
   "name": "npkm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Node package management - Another way to use git as private package",
   "main": "dist/npkm.js",
   "scripts": {

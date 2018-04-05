@@ -34,12 +34,22 @@ export class Install  extends BaseCommand  implements CommandInterface{
                            for(let name in self.packages.gits) {
                                _pks.push({
                                    name : name,
-                                   vertion : 'latest'
+                                   version : 'latest'
                                });
                            }
                         }
-                        async.eachLimit(_pks, 1, function (pk, next) {
-                            self.git(pk.name, pk.version).then(next, next);
+                        async.eachLimit(_pks, 1, function (pk, _next) {
+                            self.git(pk.name, pk.version).then(function (code) {
+                                _next();
+                            }, function (error) {
+                                console.log(error);
+                                _next();
+                            });
+                        }, function (error, results) {
+                            if (error) {
+                                console.error(error);
+                            }
+                            next();
                         });
 
                     },
@@ -47,6 +57,9 @@ export class Install  extends BaseCommand  implements CommandInterface{
                         self.npm().then(next).catch(next);
                     }
                 ], function (errors, results) {
+                    if (errors) {
+                        console.log(errors);
+                    }
                     resolve(0);
                 })
             }
