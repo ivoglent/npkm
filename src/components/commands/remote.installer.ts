@@ -168,15 +168,21 @@ export class RemoteInstaller extends Installer implements CommandInterface {
                                            });
                                            console.log(buildTasks);
                                            async.eachLimit(buildTasks, 1, function (task, next) {
+                                               let _error = '';
                                                let _proc = spawn(task.command, task.args);
                                                _proc.stdout.on('data', (data) => {
                                                    console.log(data.toString());
                                                });
                                                _proc.stderr.on('data', (data) => {
                                                    console.error(data.toString());
+                                                   _error += data.toString();
                                                });
                                                _proc.on('exit', (code) => {
-                                                   next();
+                                                   if (code === 0) {
+                                                       next();
+                                                   } else {
+                                                       next(new Error(_error))
+                                                   }
                                                });
                                            }, function (error, result) {
                                                if (error) {
@@ -193,20 +199,7 @@ export class RemoteInstaller extends Installer implements CommandInterface {
                                                            fs.mkdirSync(modulePath);
                                                            fs.chmodSync(modulePath, '0775');
                                                        }
-
-                                                       npkmConfig.dist.forEach(function (dir) {
-                                                           let dirPath = path.join(dest, dir);
-                                                           let destDirPath = path.join(cwd , 'node_modules', name, dir);
-                                                           console.log('Start copying ', dirPath, 'to', destDirPath, '...');
-                                                           exec('cp -R ' + dirPath +' ' + destDirPath, (err, stdout, stderr) => {
-                                                               if (err) {
-                                                                   console.error(err);
-                                                                   return;
-                                                               }
-                                                           });
-                                                       });
-                                                       process.chdir(cwd);
-                                                       resolve(true);
+                                                       self.copyDist(name, npkmConfig.dist, dest, cwd, resolve);
                                                    });
 
                                                }
@@ -217,22 +210,7 @@ export class RemoteInstaller extends Installer implements CommandInterface {
                                        }
                                    }
                                } else {
-                                   console.log('Copying dist...');
-                                   npkmConfig.dist.forEach(function (dir) {
-                                       let dirPath = path.join(dest, dir);
-                                       let destDirPath = path.join(cwd , 'node_modules', name);
-                                       console.log('Start copying ', dirPath, 'to', destDirPath, '...');
-                                       exec('cp -R ' + dirPath +' ' + destDirPath, (err, stdout, stderr) => {
-                                           if (err) {
-                                               console.error(err);
-                                               return;
-                                           }
-                                           console.log(`stdout: ${stdout}`);
-                                           console.log(`stderr: ${stderr}`);
-                                       });
-                                   });
-                                   process.chdir(cwd);
-                                   resolve(true);
+                                   self.copyDist(name, npkmConfig.dist, dest, cwd, resolve);
                                }
                            } catch (e) {
                                process.chdir(cwd);
@@ -256,6 +234,38 @@ export class RemoteInstaller extends Installer implements CommandInterface {
 
     /**
      *
+     * @param name
+     * @param dist
+     * @param dest
+     * @param cwd
+     * @param resolve
+     */
+    private copyDist(name, dist, dest, cwd, resolve) {
+        console.log('Copying dist...');
+        let nodeModulePath = path.join(cwd , 'node_modules', name);
+        if (!fs.existsSync(nodeModulePath)) {
+            fs.mkdirSync(nodeModulePath);
+            fs.chmod(nodeModulePath, '0775');
+        }
+        fs.copyFileSync(path.join(dest, 'package.json'), path.join(nodeModulePath,  'package.json'));
+        async.eachLimit(dist, 1, function (dir, next) {
+            let dirPath = path.join(dest, dir);
+            let destDirPath = nodeModulePath;
+            console.log('Start copying ', dirPath, 'to', destDirPath, '...');
+            exec('cp -R ' + dirPath +' ' + destDirPath, (err, stdout, stderr) => {
+                if (err) {
+                    console.error(err);
+                }
+                next();
+            });
+        }, function (error) {
+            process.chdir(cwd);
+            resolve(true);
+        })
+
+    }
+    /**
+     *
      * @param {string} dest
      * @returns {Promise<boolean>}
      */
@@ -264,8 +274,15 @@ export class RemoteInstaller extends Installer implements CommandInterface {
             try {
                 let packageJson = fs.readFileSync(path.join(dest, 'package.json'));
                 let packages = JSON.parse(packageJson);
-                if (packages.dependencies) {
-                    this.resolveDependencies(packages.dependencies).then(resolve, reject);
+                let packageAll = {};
+                for(let name in packages.dependencies) {
+                    packageAll[name] = packages.dependencies[name];
+                }
+                for(let _name in packages.devDependencies) {
+                    packageAll[_name] = packages.devDependencies[_name];
+                }
+                if (packageAll) {
+                    this.resolveDependencies(packageAll).then(resolve, reject);
                 }
             } catch (e) {
                 reject(e);

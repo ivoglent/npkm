@@ -43,7 +43,7 @@ export class Install  extends BaseCommand  implements CommandInterface{
                                 _next();
                             }, function (error) {
                                 console.log(error);
-                                _next();
+                                _next(new Error(error));
                             });
                         }, function (error, results) {
                             if (error) {
@@ -59,6 +59,7 @@ export class Install  extends BaseCommand  implements CommandInterface{
                 ], function (errors, results) {
                     if (errors) {
                         console.log(errors);
+                        return reject(errors);
                     }
                     resolve(0);
                 })
